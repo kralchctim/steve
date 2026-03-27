@@ -5,6 +5,7 @@ from app.modules.image_utils import (
     crop_name_region,
     crop_set_code_region,
 )
+from app.modules.detect_and_crop import preprocess_image_with_card_detection
 from app.modules.ocr_utils import (
     extract_best_name_guess,
     run_all_ocr_variants,
@@ -28,16 +29,17 @@ def scan_image_for_name(image_path: Path, candidate_names: list[str]) -> dict:
     matching for UI debugging.
     """
     image = load_image(image_path)
+    processed_image = preprocess_image_with_card_detection(image)
 
     # Name region
-    name_region = crop_name_region(image)
+    name_region = crop_name_region(processed_image)
     name_raw_results = run_all_ocr_variants(name_region)
     name_best_variant, name_best_raw_text = choose_best_ocr_result(name_raw_results)
     name_best_guess = extract_best_name_guess(name_best_raw_text)
     top_matches = get_top_name_matches(name_best_guess, candidate_names, limit=3)
 
     # Bottom strip region
-    bottom_strip_region = crop_set_code_region(image)
+    bottom_strip_region = crop_set_code_region(processed_image)
     bottom_raw_results = run_all_ocr_variants(bottom_strip_region)
     bottom_best_variant, bottom_best_raw_text = choose_best_ocr_result(bottom_raw_results)
     parsed_bottom = parse_bottom_strip_text(bottom_best_raw_text)

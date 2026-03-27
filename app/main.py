@@ -52,6 +52,7 @@ from app.modules.printings_loader import (
 from app.modules.printing_selector import choose_from_matches
 
 from app.modules.results_writer import ensure_results_file, append_result_row
+from app.modules.detect_and_crop import preprocess_image_with_card_detection
 
 def process_image(image_path, candidate_names, printings):
     print("\n" + "=" * 60)
@@ -59,16 +60,17 @@ def process_image(image_path, candidate_names, printings):
     print("=" * 60)
 
     image = load_image(image_path)
-    print_image_info(image, image_path)
+    processed_image = preprocess_image_with_card_detection(image)
+    print_image_info(processed_image, image_path)
 
-    debug_path = save_debug_copy(image, image_path)
+    debug_path = save_debug_copy(processed_image, image_path)
     print(f"Debug copy saved to: {debug_path}")
 
-    cropped_image = crop_center(image, crop_width_ratio=0.5, crop_height_ratio=0.5)
+    cropped_image = crop_center(processed_image, crop_width_ratio=0.5, crop_height_ratio=0.5)
     cropped_path = save_cropped_image(cropped_image, image_path)
     print(f"Cropped image saved to: {cropped_path}")
 
-    name_region = crop_name_region(image)
+    name_region = crop_name_region(processed_image)
     name_region_path = save_name_region_image(name_region, image_path)
     print(f"Name region image saved to: {name_region_path}")
 
@@ -76,7 +78,7 @@ def process_image(image_path, candidate_names, printings):
     preprocessed_path = save_preprocessed_image(preprocessed_name_region, image_path)
     print(f"Preprocessed image saved to: {preprocessed_path}")
 
-    set_code_region = crop_set_code_region(image)
+    set_code_region = crop_set_code_region(processed_image)
     set_code_region_path = save_set_code_region_image(set_code_region, image_path)
     print(f"Set code region image saved to: {set_code_region_path}")
 
